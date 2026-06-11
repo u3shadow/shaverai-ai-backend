@@ -1,12 +1,12 @@
-from typing import Any
-
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class DeviceContext(BaseModel):
     wifi: str | None = None
     battery: int | None = None
-    extra: dict[str, Any] = Field(default_factory=dict)
+    bluetooth_enabled: bool | None = None
+    screen_brightness: int | None = None
+    volume: int | None = None
 
 
 class ChatRequest(BaseModel):
