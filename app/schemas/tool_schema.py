@@ -2,10 +2,10 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
-class ToolCall(BaseModel):
-   action: str
-   params: dict
 
+class ToolCall(BaseModel):
+    action: str
+    params: dict[str, Any] = Field(default_factory=dict)
 
 
 class ActionItem(BaseModel):
