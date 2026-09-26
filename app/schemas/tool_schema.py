@@ -18,3 +18,6 @@ class ActionPlan(BaseModel):
     need_android_execute: bool
     actions: list[ActionItem] = Field(default_factory=list)
     message: str
+    skill_id: str
+    execution_target: str
+    requires_confirmation: bool = False

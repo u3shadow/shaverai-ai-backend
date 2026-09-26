@@ -47,12 +47,23 @@ class ChromaStore:
         self.vector_store.add_documents(documents, ids=ids)
 
         return ids
+    def get_by_metadata(self, where: dict[str, Any]) -> dict[str, Any]:
+        return self.vector_store.get(
+            where=where,
+            include=["documents", "metadatas"],
+        )
 
-    def similarity_search(self,query:str,top_k:int = 5) -> list[dict[str,Any]]:
+    def delete_by_ids(self, ids: list[str]) -> None:
+        if ids:
+            self.vector_store.delete(ids=ids)
+
+    def similarity_search(self,query:str,top_k:int = 5 ,where: dict[str, Any] | None = None,) -> list[dict[str,Any]]:
         if not query.strip():
             return []
-        
-        results = self.vector_store.similarity_search_with_score(query, k=top_k)
+        search_options = {}
+        if where:
+            search_options["filter"] = where
+        results = self.vector_store.similarity_search_with_score(query, k=top_k, **search_options)
 
         normalized_results:list[dict[str,Any]] = []
 
@@ -93,4 +104,3 @@ class ChromaStore:
         if ids:
             self.vector_store.delete(ids=ids)
     
-

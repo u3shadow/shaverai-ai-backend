@@ -1,15 +1,10 @@
 from typing import Any
 
 from app.schemas.tool_schema import ActionItem
-
+from app.services.skill_registry import skill_registry
 
 class ToolCallValidator:
-    supported_actions = {
-        "set_volume",
-        "set_brightness",
-        "set_bluetooth",
-        "create_rule",
-    }
+    supported_actions = skill_registry.supported_actions
 
     def validate(self, action_item: ActionItem | dict[str, Any]) -> ActionItem:
         item = self._to_action_item(action_item)
@@ -42,7 +37,8 @@ class ToolCallValidator:
             raise ValueError("set_volume requires params.level")
 
         level = params["level"]
-        if not isinstance(level, int):
+        # bool 是 int 的子类；设备参数必须是明确的整数。
+        if type(level) is not int:
             raise ValueError("set_volume params.level must be int")
 
         if level < 0 or level > 15:
@@ -53,7 +49,8 @@ class ToolCallValidator:
             raise ValueError("set_brightness requires params.value")
 
         value = params["value"]
-        if not isinstance(value, int):
+        # bool 是 int 的子类；设备参数必须是明确的整数。
+        if type(value) is not int:
             raise ValueError("set_brightness params.value must be int")
 
         if value < 0 or value > 100:
