@@ -8,6 +8,7 @@ from app.schemas.rag_schema import (
     UploadLocalRequest,
 )
 from app.services.rag_service import RagService
+from app.services.retriever import Retriever
 
 
 router = APIRouter(prefix="/rag", tags=["RAG"])
@@ -37,4 +38,24 @@ def query(req: RagQueryRequest):
 def documents():
     return {
         "documents": rag_service.list_documents()
+    }
+
+@router.post("/debug")
+def debug_rag(req:RagQueryRequest):
+    retriever = Retriever(rag_service.store)
+    chunks = retriever.retrieve(req.query,top_k=20)
+
+    return {
+        "query":req.query,
+        "retrieved":[
+            {
+               "rank": rank,
+                "doc_name": chunk.doc_name,
+                "chunk_id": chunk.chunk_id,
+                "vector_distance": chunk.vector_distance,
+                "vector_score": chunk.vector_score,
+                "content_preview": chunk.content[:150],
+            }
+            for rank, chunk in enumerate(chunks, start=1)
+        ]
     }

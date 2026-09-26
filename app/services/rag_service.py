@@ -2,14 +2,17 @@ from pathlib import Path
 
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
 from app.services.prompt_builder import PromptBuilder
+from app.services.reranker import Reranker
+from app.services.retriever import Retriever
 from app.vector_store.chroma_store import ChromaStore
 
 class RagService:
     def __init__(self)-> None:
+        self.min_rerank_score = 0.3977
         self.store = ChromaStore()
-
+        self.retriever =  Retriever(self.store)
+        self.reranker = Reranker()
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=500,
             chunk_overlap=80,
@@ -52,8 +55,30 @@ class RagService:
         }
 
     def query(self, query: str, top_k: int = 5) -> dict:
-        results = self.store.similarity_search(query=query, top_k=top_k)
+        retrieved_chunks = self.retriever.retrieve(query=query, top_k=20)
+        rerank_chunks = self.reranker.rerank(query=query, chunks=retrieved_chunks)
+        if (
+            not rerank_chunks
+            or rerank_chunks[0].rerank_score < self.min_rerank_score
+            ):
+            return {
+                "answer": "当前知识库中没有足够依据回答这个问题。",
+                "sources": [],
+                "retrieved_count": len(retrieved_chunks),
+            }
+        selected_chunks = rerank_chunks[:min(top_k, 5)]
+        results = [
+            {
+                "doc_name": chunk.doc_name,
+                "chunk_id": chunk.chunk_id,
+                "content": chunk.content,
 
+                # 下面两个字段供现有 Sources 代码和 mock answer 使用
+                "score": chunk.rerank_score,
+                "content_preview": chunk.content[:120],
+            }
+             for chunk in selected_chunks
+        ]
         if not results:
             return {
                 "answer": "当前知识库中没有足够依据回答这个问题。",
@@ -80,7 +105,7 @@ class RagService:
         return {
             "answer": answer,
             "sources": sources,
-            "retrieved_count": len(results),
+            "retrieved_count": len(retrieved_chunks),
         }
 
     def list_documents(self) -> list[str]:

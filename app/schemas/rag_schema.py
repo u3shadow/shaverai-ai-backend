@@ -1,5 +1,19 @@
 from pydantic import BaseModel, Field
+from typing import Any
 
+class RetrievedChunk(BaseModel):
+    doc_name: str
+    chunk_id: str
+    content: str
+    vector_distance: float
+    vector_score: float
+    metadata:dict[str,Any] = Field(default_factory=dict)
+
+class RerankedChunk(RetrievedChunk):
+    keyword_score: float = 0.0
+    title_score: float = 0.0
+    metadata_score: float = 0.0
+    rerank_score: float = 0.0
 
 class UploadLocalRequest(BaseModel):
     path: str = Field(..., description="本地md文件路径")

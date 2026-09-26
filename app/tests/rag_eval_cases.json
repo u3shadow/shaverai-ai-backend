@@ -1,0 +1,32 @@
+[
+  {
+    "id": "case_001",
+    "question": "ShaverAI 中 Tool Calling 怎么保证安全？",
+    "expected_docs": ["shaverai_tool_call.md"],
+    "answerable": true
+  },
+  {
+    "id": "case_002",
+    "question": "模型为什么不能直接执行 Android 能力？",
+    "expected_docs": ["shaverai_tool_call.md"],
+    "answerable": true
+  },
+  {
+    "id": "case_003",
+    "question": "RAG 和微调有什么区别？",
+    "expected_docs": ["rag_notes.md"],
+    "answerable": true
+  },
+  {
+    "id": "case_004",
+    "question": "Android 和 Python 后端分别负责什么？",
+    "expected_docs": ["shaverai_architecture.md"],
+    "answerable": true
+  },
+  {
+    "id": "case_005",
+    "question": "ShaverAI 为什么使用 Kafka？",
+    "expected_docs": [],
+    "answerable": false
+  }
+]
