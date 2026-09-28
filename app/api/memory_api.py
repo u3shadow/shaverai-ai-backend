@@ -6,11 +6,10 @@ from app.schemas.memory_schema import (
     MemorySearchRequest,
     MemorySearchResponse,
 )
-from app.services.memory_service import MemoryService
+from app.core.service_container import memory_service
 
 
 router = APIRouter(prefix="/memory", tags=["Memory"])
-memory_service = MemoryService()
 
 
 @router.post(

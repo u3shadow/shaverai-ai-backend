@@ -6,11 +6,10 @@ from app.schemas.rule_schema import (
     RuleCreateRequest,
     RuleEnableRequest,
 )
-from app.services.rule_engine import RuleEngine
+from app.core.service_container import rule_engine
 
 
 router = APIRouter(prefix="/rules", tags=["Rules"])
-rule_engine = RuleEngine()
 
 
 @router.post(

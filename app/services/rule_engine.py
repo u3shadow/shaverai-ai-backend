@@ -22,7 +22,18 @@ class RuleEngine:
 
     def create_rule(self, request: RuleCreateRequest) -> Rule:
         """校验并保存规则。"""
+        normalized = self.validate_rule(request)
+        rule = Rule(
+            rule_id=f"rule_{uuid4().hex}",
+            user_id=normalized.user_id,
+            name=normalized.name,
+            trigger=normalized.trigger,
+            action=normalized.action,
+        )
+        return self.repository.create(rule)
 
+    def validate_rule(self, request: RuleCreateRequest) -> RuleCreateRequest:
+        """Validate and normalize a rule draft without writing to storage."""
         if not request.user_id.strip():
             raise ValueError("user_id 不能为空")
 
@@ -37,6 +48,8 @@ class RuleEngine:
             )
 
         trigger_params = request.trigger.get("params", {})
+        if not isinstance(trigger_params, dict):
+            raise ValueError("wifi_connected 触发器 params 必须是对象")
         ssid = trigger_params.get("ssid")
 
         if not isinstance(ssid, str) or not ssid.strip():
@@ -49,10 +62,12 @@ class RuleEngine:
         action_type = request.action.get("type")
         action_params = request.action.get("params", {})
 
-        if action_type not in self.RULE_ACTIONS:
+        if not isinstance(action_type, str) or action_type not in self.RULE_ACTIONS:
             raise ValueError(
                 f"规则暂不支持此动作: {action_type}"
             )
+        if not isinstance(action_params, dict):
+            raise ValueError("规则动作 params 必须是对象")
 
         validated_action = tool_call_validator.validate(
             {
@@ -61,14 +76,13 @@ class RuleEngine:
             }
         )
 
-        # 保存时统一成规范格式，避免写入未校验的原始参数
+        # 返回规范化草案，供确认前展示，也供最终保存时复用。
         normalized_action = {
             "type": validated_action.action,
             "params": validated_action.params,
         }
 
-        rule = Rule(
-            rule_id=f"rule_{uuid4().hex}",
+        return RuleCreateRequest(
             user_id=request.user_id,
             name=request.name,
             trigger={
@@ -77,8 +91,6 @@ class RuleEngine:
             },
             action=normalized_action,
         )
-
-        return self.repository.create(rule)
 
     def list_rules(self, user_id: str) -> list[Rule]:
         """列出指定用户的规则。"""

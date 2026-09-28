@@ -7,13 +7,12 @@ from app.schemas.rag_schema import (
     RagUploadResponse,
     UploadLocalRequest,
 )
-from app.services.rag_service import RagService
 from app.services.retriever import Retriever
-
+from app.core.service_container import rag_service
 
 router = APIRouter(prefix="/rag", tags=["RAG"])
 
-rag_service = RagService()
+
 
 
 @router.post("/upload-local", response_model=RagUploadResponse)
