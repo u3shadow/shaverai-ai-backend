@@ -1,5 +1,10 @@
 from typing import Any, Literal, NotRequired, TypedDict
 
+from app.schemas.agent_strategy_schema import (
+    AgentMode,
+    TaskComplexity,
+)
+
 
 # Agent 当前处理的请求类型。
 # UNKNOWN 用于无法识别或需要向用户澄清的请求。
@@ -38,6 +43,25 @@ class AgentState(TypedDict):
 
     # IntentNode 判断出的请求类型。
     intent: NotRequired[IntentType]
+
+    # Day 7：任务复杂度，以及后端校验后采用的处理模式。
+    complexity: NotRequired[TaskComplexity]
+    mode: NotRequired[AgentMode]
+    suggested_mode: NotRequired[AgentMode]
+    strategy_reason: NotRequired[str]
+
+    # Day 7：结构化计划草案和校验后的计划，统一以 dict 放入 State。
+    plan_draft: NotRequired[dict[str, Any] | None]
+    plan: NotRequired[dict[str, Any] | None]
+
+    # Day 7：ReAct 工具循环的观察结果和轮数控制字段。
+    observations: NotRequired[list[dict[str, Any]]]
+    iteration_count: NotRequired[int]
+    max_iterations: NotRequired[int]
+    react_status: NotRequired[
+        Literal["tool_call", "observed", "final", "limit", "error"]
+    ]
+    react_tool_call: NotRequired[dict[str, Any] | None]
 
     # MemoryNode 搜索到的用户记忆。
     memories: NotRequired[list[dict[str, Any]]]
@@ -78,6 +102,14 @@ class AgentState(TypedDict):
     trace: NotRequired[list[TraceEntry]]
 
     test_intent: NotRequired[IntentType]
+    # 仅供内部测试：注入结构化意图/策略结果，避免调用 DeepSeek。
+    # API 不会从用户请求中接收或转发这个字段。
+    test_strategy_decision: NotRequired[dict[str, Any]]
+    # 仅供本地验收：按顺序模拟 ReAct 模型的工具选择和最终回答。
+    test_react_decisions: NotRequired[list[dict[str, Any]]]
+    test_react_decision_index: NotRequired[int]
     test_tool_call: NotRequired[dict[str, Any]]
     # 仅供本地验收：模拟用户已确认规则草案。
     test_confirmed: NotRequired[bool]
+    # 仅供本地验收：注入 PlanAct 草案，避免调用 DeepSeek。
+    test_plan_draft: NotRequired[dict[str, Any]]

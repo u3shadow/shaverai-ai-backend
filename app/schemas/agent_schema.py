@@ -3,7 +3,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 from app.schemas.tool_schema import ActionPlan
-
+from app.schemas.agent_strategy_schema import AgentPlan
 
 class DeviceContext(BaseModel):
     wifi: str | None = None
@@ -29,6 +29,7 @@ class ChatResponse(BaseModel):
     type: Literal[
         "answer",
         "action_plan",
+        "plan",
         "rule_result",
         "clarification",
         "confirmation_required",
@@ -47,3 +48,5 @@ class ChatResponse(BaseModel):
     # 错误信息和 Graph 执行轨迹
     errors: list[str] = Field(default_factory=list)
     trace: list[dict[str, Any]] = Field(default_factory=list)
+    # PlanAct 生成的多步骤计划
+    plan: AgentPlan | None = None

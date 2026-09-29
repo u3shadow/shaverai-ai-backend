@@ -56,6 +56,7 @@ def graph_result_to_response(result: dict) -> ChatResponse:
     action_plan = result.get("action_plan")
     rule_result = result.get("rule_result")
     errors = result.get("errors", [])
+    plan = result.get("plan")
 
     if errors:
         response_type = "error"
@@ -69,6 +70,12 @@ def graph_result_to_response(result: dict) -> ChatResponse:
         and action_plan.get("requires_confirmation", False)
     ):
         response_type = "confirmation_required"
+    elif plan:
+        response_type = (
+            "confirmation_required"
+            if plan.get("requires_confirmation", False)
+            else "plan"
+        )
     elif action_plan:
         response_type = "action_plan"
     elif intent == "UNKNOWN":
@@ -84,6 +91,7 @@ def graph_result_to_response(result: dict) -> ChatResponse:
             if action_plan
             else False
         ),
+        plan=plan,
         type=response_type,
         sources=result.get("sources", []),
         action_plan=action_plan,
